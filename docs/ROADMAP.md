@@ -1,202 +1,202 @@
-# Development Roadmap — Student Task Tracker
+# Roadmap — Student Task Tracker
 
-> Source: Brief.pdf + UX Documentation (`docs/ux/`)  
-> Duration: **2 weeks · 2 sprints**  
-> Format: Epics → Tasks (Jira-style)
+> Źródło: Brief.pdf + Dokumentacja UX (`docs/ux/`)  
+> Czas trwania: **2 tygodnie · 2 sprinty**  
+> Format: Epiki → Zadania (styl Jira)
 
 ---
 
-## Stack
+## Stos technologiczny
 
-| Layer | Technology |
-|-------|-----------|
+| Warstwa | Technologia |
+|---------|-------------|
 | Frontend | React + Tailwind CSS |
 | Backend | Python (FastAPI) |
-| Database | SQLite (dev) → PostgreSQL (prod) |
-| Auth | JWT |
+| Baza danych | SQLite (dev) → PostgreSQL (prod) |
+| Autoryzacja | JWT |
 | API | REST |
 
 ---
 
-## Timeline Overview
+## Harmonogram
 
-| Sprint | Week | Focus |
-|--------|------|-------|
-| Sprint 1 | Week 1 | Setup · Auth · Subjects · Tasks |
-| Sprint 2 | Week 2 | Dashboard · Sharing · Onboarding · Deploy |
-
----
-
----
-
-## Sprint 1 — Core
-
-**Goal:** Working backend with auth and full task/subject CRUD. User can log in and manage their tasks.
-
----
-
-### EP-01 · Project Setup
-
-| # | Task |
-|---|------|
-| T-01 | Ініціалізація репозиторію (структура `/frontend`, `/backend`, `.gitignore`, `README`) |
-| T-02 | Налаштування backend (FastAPI + SQLAlchemy + Alembic) |
-| T-03 | Налаштування frontend (React + Vite + Tailwind CSS + React Router) |
-| T-04 | Створення схеми бази даних і запуск першої міграції |
-| T-05 | Налаштування `docker-compose` для запуску всього локально однією командою |
-
----
-
-### EP-02 · Автентифікація та користувачі
-
-| # | Task |
-|---|------|
-| T-06 | Реєстрація користувача (email + пароль + ім'я) |
-| T-07 | Вхід в акаунт і отримання JWT-токена |
-| T-08 | Вихід з акаунта (інвалідація токена) |
-| T-09 | Захист усіх маршрутів — доступ лише авторизованим |
-| T-10 | Сторінка профілю — перегляд і редагування імені |
-| T-11 | UI: сторінка входу/реєстрації (таб-перемикач на одній сторінці) |
-
----
-
-### EP-03 · Предмети
-
-| # | Task |
-|---|------|
-| T-12 | Створення предмета |
-| T-13 | Перейменування предмета |
-| T-14 | Видалення предмета (з підтвердженням, якщо є прив'язані завдання) |
-| T-15 | Список предметів із кількістю завдань і відсотком виконання |
-| T-16 | UI: екран списку предметів із картками і кнопкою "Додати предмет" |
-
----
-
-### EP-04 · Завдання
-
-| # | Task |
-|---|------|
-| T-17 | Створення завдання (назва, предмет, дедлайн, пріоритет, статус, опис) |
-| T-18 | Перегляд списку завдань (з фільтром за статусом і сортуванням за дедлайном) |
-| T-19 | Редагування завдання |
-| T-20 | Видалення завдання |
-| T-21 | Швидка зміна статусу завдання ("позначити як виконане" одним кліком зі списку) |
-| T-22 | UI: форма створення/редагування завдання |
-| T-23 | UI: екран деталей завдання |
-| T-24 | UI: екран предмета з його списком завдань |
-
----
-
-**Sprint 1 — Критерії завершення:**
-- [ ] Можна зареєструватися, увійти, вийти
-- [ ] Сесія зберігається після перезавантаження сторінки
-- [ ] Повний CRUD для предметів і завдань працює
-- [ ] Зміна статусу завдання доступна прямо зі списку
-- [ ] Усі маршрути захищені — неавторизований отримує 401
+| Sprint | Tydzień | Zakres |
+|--------|---------|--------|
+| Sprint 1 | Tydzień 1 | Konfiguracja · Autoryzacja · Przedmioty · Zadania |
+| Sprint 2 | Tydzień 2 | Dashboard · Udostępnianie · Onboarding · Wdrożenie |
 
 ---
 
 ---
 
-## Sprint 2 — Features & Release
+## Sprint 1 — Rdzeń aplikacji
 
-**Goal:** Dashboard, sharing, onboarding, responsive UI, deployed to production.
-
----
-
-### EP-05 · Дашборд і прогрес
-
-| # | Task |
-|---|------|
-| T-25 | API-ендпоінт `/dashboard` — повертає прострочені, найближчі дедлайни, прогрес по предметах, загальну статистику |
-| T-26 | UI: секція прострочених завдань (показується тільки якщо є, червоне виділення, на першому місці) |
-| T-27 | UI: секція найближчих дедлайнів (топ-5, відносні мітки: "сьогодні", "завтра") |
-| T-28 | UI: прогрес по предметах (міні-прогрес-бар, сортування від найменш виконаних) |
-| T-29 | UI: порожній стан дашборду коли завдань ще немає |
+**Cel:** Działający backend z autoryzacją i pełnym CRUD dla zadań i przedmiotów. Użytkownik może się zalogować i zarządzać swoimi zadaniami.
 
 ---
 
-### EP-06 · Поширення завдань
+### EP-01 · Konfiguracja projektu
 
-| # | Task |
-|---|------|
-| T-30 | Поширення завдання з іншим користувачем за email (доступ для перегляду або редагування) |
-| T-31 | Генерація посилання на завдання (доступ "переглянути" або "редагувати", посилання активне до відкликання) |
-| T-32 | Перегляд і скасування доступу для кожного користувача |
-| T-33 | Екран "Поширено зі мною" — окремий розділ із завданнями інших |
-| T-34 | Перехід за посиланням незареєстрованим користувачем → редирект на реєстрацію → автоматичне відкриття завдання |
-| T-35 | Захист на бекенді: користувач із доступом "перегляд" не може редагувати або поширювати |
-
----
-
-### EP-07 · Онбординг
-
-| # | Task |
-|---|------|
-| T-36 | Крок 1: запит "Який предмет маєш сьогодні?" — створення першого предмета |
-| T-37 | Крок 2: "Додай завдання для [предмет]" — створення першого завдання |
-| T-38 | Логіка: онбординг показується лише при першому вході, прапорець `onboarding_completed` у профілі користувача |
-| T-39 | Кнопка "Пропустити" — перехід на дашборд із підказкою "Додай перший предмет" |
+| # | Zadanie |
+|---|---------|
+| T-01 | Inicjalizacja repozytorium (struktura `/frontend`, `/backend`, `.gitignore`, `README`) |
+| T-02 | Konfiguracja backendu (FastAPI + SQLAlchemy + Alembic) |
+| T-03 | Konfiguracja frontendu (React + Vite + Tailwind CSS + React Router) |
+| T-04 | Stworzenie schematu bazy danych i uruchomienie pierwszej migracji |
+| T-05 | Konfiguracja `docker-compose` do uruchamiania całości lokalnie jedną komendą |
 
 ---
 
-### EP-08 · Польша та деплой
+### EP-02 · Autoryzacja i użytkownicy
 
-| # | Task |
-|---|------|
-| T-40 | Адаптивна верстка для мобільних пристроїв (375px і вище) |
-| T-41 | Стани завантаження (скелетони) для дашборду та списків |
-| T-42 | Обробка помилок: повідомлення при втраті з'єднання та серверних помилках |
-| T-43 | Деплой бекенду (Render / Railway) з підключенням до PostgreSQL |
-| T-44 | Деплой фронтенду (Vercel / Netlify) |
-| T-45 | Ручне тестування всіх основних флоу на продакшн-URL |
-
----
-
-**Sprint 2 — Критерії завершення:**
-- [ ] Дашборд відображає дані в правильному порядку пріоритетів
-- [ ] Можна поширити завдання за email і за посиланням
-- [ ] Отримувач бачить завдання в "Поширено зі мною"
-- [ ] Новий користувач проходить онбординг при першому вході
-- [ ] Застосунок відкривається на телефоні без горизонтального скролу
-- [ ] Застосунок доступний за публічним URL
+| # | Zadanie |
+|---|---------|
+| T-06 | Rejestracja użytkownika (email + hasło + imię) |
+| T-07 | Logowanie i generowanie tokenu JWT |
+| T-08 | Wylogowanie (unieważnienie tokenu) |
+| T-09 | Zabezpieczenie wszystkich endpointów — dostęp tylko dla zalogowanych |
+| T-10 | Strona profilu — podgląd i edycja imienia |
+| T-11 | UI: strona logowania/rejestracji (przełącznik zakładek na jednej stronie) |
 
 ---
 
+### EP-03 · Przedmioty
+
+| # | Zadanie |
+|---|---------|
+| T-12 | Dodawanie przedmiotu |
+| T-13 | Zmiana nazwy przedmiotu |
+| T-14 | Usuwanie przedmiotu (z potwierdzeniem, jeśli są powiązane zadania) |
+| T-15 | Lista przedmiotów z liczbą zadań i procentem ukończenia |
+| T-16 | UI: ekran listy przedmiotów z kartami i przyciskiem „Dodaj przedmiot" |
+
 ---
 
-## Dependency Order
+### EP-04 · Zadania
+
+| # | Zadanie |
+|---|---------|
+| T-17 | Dodawanie zadania (nazwa, przedmiot, termin, priorytet, status, opis) |
+| T-18 | Przeglądanie listy zadań (z filtrem po statusie i sortowaniem po terminie) |
+| T-19 | Edycja zadania |
+| T-20 | Usuwanie zadania |
+| T-21 | Szybka zmiana statusu zadania („oznacz jako ukończone" jednym kliknięciem z listy) |
+| T-22 | UI: formularz dodawania/edycji zadania |
+| T-23 | UI: ekran szczegółów zadania |
+| T-24 | UI: ekran przedmiotu z listą jego zadań |
+
+---
+
+**Kryteria ukończenia Sprintu 1:**
+- [ ] Można się zarejestrować, zalogować i wylogować
+- [ ] Sesja jest zachowywana po odświeżeniu strony
+- [ ] Pełny CRUD dla przedmiotów i zadań działa poprawnie
+- [ ] Zmiana statusu zadania dostępna bezpośrednio z listy
+- [ ] Wszystkie endpointy są zabezpieczone — nieautoryzowany otrzymuje 401
+
+---
+
+---
+
+## Sprint 2 — Funkcjonalności i wdrożenie
+
+**Cel:** Dashboard, udostępnianie zadań, onboarding, responsywny UI, aplikacja dostępna pod publicznym adresem.
+
+---
+
+### EP-05 · Dashboard i postęp
+
+| # | Zadanie |
+|---|---------|
+| T-25 | Endpoint `/dashboard` — zwraca przeterminowane zadania, najbliższe terminy, postęp po przedmiotach, ogólne statystyki |
+| T-26 | UI: sekcja przeterminowanych zadań (widoczna tylko jeśli istnieją, czerwone wyróżnienie, na pierwszym miejscu) |
+| T-27 | UI: sekcja najbliższych terminów (top 5, relatywne etykiety: „dziś", „jutro") |
+| T-28 | UI: postęp po przedmiotach (mini pasek postępu, sortowanie od najmniej ukończonych) |
+| T-29 | UI: pusty stan dashboardu gdy nie ma jeszcze żadnych zadań |
+
+---
+
+### EP-06 · Udostępnianie zadań
+
+| # | Zadanie |
+|---|---------|
+| T-30 | Udostępnianie zadania innemu użytkownikowi po emailu (dostęp do podglądu lub edycji) |
+| T-31 | Generowanie linku do zadania (uprawnienie „podgląd" lub „edycja", link aktywny do odwołania) |
+| T-32 | Podgląd i cofanie dostępu dla każdego użytkownika |
+| T-33 | Ekran „Udostępnione mi" — osobna sekcja z zadaniami innych użytkowników |
+| T-34 | Otwarcie linku przez niezalogowanego użytkownika → przekierowanie do rejestracji → automatyczne otwarcie zadania po zalogowaniu |
+| T-35 | Zabezpieczenie na backendzie: użytkownik z dostępem „podgląd" nie może edytować ani udostępniać |
+
+---
+
+### EP-07 · Onboarding
+
+| # | Zadanie |
+|---|---------|
+| T-36 | Krok 1: pytanie „Jaki przedmiot masz dziś?" — utworzenie pierwszego przedmiotu |
+| T-37 | Krok 2: „Dodaj zadanie dla [przedmiot]" — utworzenie pierwszego zadania |
+| T-38 | Logika: onboarding wyświetlany tylko przy pierwszym logowaniu, flaga `onboarding_completed` w profilu użytkownika |
+| T-39 | Przycisk „Pomiń" — przejście do dashboardu z podpowiedzią „Dodaj pierwszy przedmiot" |
+
+---
+
+### EP-08 · Dopracowanie i wdrożenie
+
+| # | Zadanie |
+|---|---------|
+| T-40 | Responsywny layout dla urządzeń mobilnych (375px i więcej) |
+| T-41 | Stany ładowania (szkielety) dla dashboardu i list |
+| T-42 | Obsługa błędów: komunikaty przy braku połączenia i błędach serwera |
+| T-43 | Wdrożenie backendu (Render / Railway) z połączeniem do PostgreSQL |
+| T-44 | Wdrożenie frontendu (Vercel / Netlify) |
+| T-45 | Ręczne testowanie wszystkich głównych przepływów na produkcyjnym URL |
+
+---
+
+**Kryteria ukończenia Sprintu 2:**
+- [ ] Dashboard wyświetla dane we właściwej kolejności priorytetów
+- [ ] Można udostępnić zadanie po emailu i przez link
+- [ ] Odbiorca widzi zadanie w sekcji „Udostępnione mi"
+- [ ] Nowy użytkownik przechodzi onboarding przy pierwszym logowaniu
+- [ ] Aplikacja działa na telefonie bez poziomego przewijania
+- [ ] Aplikacja jest dostępna pod publicznym adresem URL
+
+---
+
+---
+
+## Kolejność zależności
 
 ```
-EP-01 Setup
-  └── EP-02 Auth
-        ├── EP-03 Subjects
-        │     └── EP-04 Tasks
+EP-01 Konfiguracja
+  └── EP-02 Autoryzacja
+        ├── EP-03 Przedmioty
+        │     └── EP-04 Zadania
         │           ├── EP-05 Dashboard
-        │           └── EP-06 Sharing
-        └── EP-07 Onboarding  (використовує EP-03 + EP-04, нових ендпоінтів не потребує)
+        │           └── EP-06 Udostępnianie
+        └── EP-07 Onboarding  (korzysta z EP-03 + EP-04, nie wymaga nowych endpointów)
 
-EP-08 Polish + Deploy  ─── паралельно з EP-05–07, останнім іде деплой
+EP-08 Dopracowanie + Wdrożenie  ─── równolegle z EP-05–07, wdrożenie na końcu
 ```
 
 ---
 
-## Risk Register
+## Rejestr ryzyk
 
-| Ризик | Вплив | Мітигація |
-|-------|-------|-----------|
-| JWT refresh при паралельних запитах може зламатись | Високий | Реалізувати axios interceptor з чергою запитів |
-| Sprint 1 перевантажений (Auth + Subjects + Tasks) | Середній | Бекенд і фронтенд розробники працюють паралельно з першого дня |
-| Поширення за посиланням — складна логіка redirect після реєстрації | Середній | Реалізувати `?redirect=` параметр в першу чергу, протестувати окремо |
-| Деплой займає більше часу ніж очікується | Низький | Налаштувати Render/Vercel в кінці Sprint 1, не залишати на останній день |
+| Ryzyko | Wpływ | Sposób mitygacji |
+|--------|-------|-----------------|
+| JWT refresh przy równoległych zapytaniach może się posypać | Wysoki | Zaimplementować axios interceptor z kolejką zapytań |
+| Sprint 1 jest przeciążony (Autoryzacja + Przedmioty + Zadania) | Średni | Backend i frontend pracują równolegle od pierwszego dnia |
+| Udostępnianie przez link — złożona logika przekierowania po rejestracji | Średni | Zaimplementować parametr `?redirect=` jako pierwszą rzecz, przetestować osobno |
+| Wdrożenie zajmuje więcej czasu niż oczekiwano | Niski | Skonfigurować Render/Vercel pod koniec Sprintu 1, nie zostawiać na ostatni dzień |
 
 ---
 
-## Definition of Done
+## Definicja ukończenia
 
-Таска вважається виконаною, коли:
+Zadanie uważa się za ukończone, gdy:
 
-- [ ] Код злитий у `main` через PR
-- [ ] Немає захардкоджених секретів або URL (лише через `.env`)
-- [ ] Функціонал вручну перевірений у браузері
-- [ ] Для бекенд-ендпоінту: покритий хоча б одним тестом (happy path + один error case)
+- [ ] Kod scalony z `main` przez Pull Request
+- [ ] Brak zahardkodowanych sekretów lub adresów URL (wyłącznie przez `.env`)
+- [ ] Funkcjonalność sprawdzona ręcznie w przeglądarce
+- [ ] Dla endpointu backendowego: pokryty co najmniej jednym testem (happy path + jeden przypadek błędu)
