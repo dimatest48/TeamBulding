@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tracker
+      POSTGRES_PASSWORD: tracker
+      POSTGRES_DB: student_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracker -d student_tracker"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://tracker:tracker@db:5432/student_tracker
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      FRONTEND_URL: ${FRONTEND_URL:-http://127.0.0.1:5173}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://127.0.0.1:5173,http://localhost:5173}
+      CLERK_JWKS_URL: ${CLERK_JWKS_URL:-}
+      CLERK_ISSUER: ${CLERK_ISSUER:-}
+      CLERK_AUTHORIZED_PARTIES: ${CLERK_AUTHORIZED_PARTIES:-${CORS_ORIGINS:-http://127.0.0.1:5173,http://localhost:5173}}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-no-reply@tasker.local}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Browser talks to the backend on the host's published port
+        VITE_API_URL: ${VITE_API_URL:-http://127.0.0.1:8000}
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
