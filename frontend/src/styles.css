@@ -1,0 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color: #1c2033;
+    font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body { margin: 0; background: #f7f3ea; }
+  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; letter-spacing: -0.01em; }
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-amber px-6 py-3 font-semibold text-ink shadow-[0_12px_28px_-12px_rgba(232,165,49,0.8)] transition hover:-translate-y-0.5 hover:bg-[#f1b347] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-[rgba(236,231,218,0.35)] px-6 py-3 font-semibold text-paper transition hover:-translate-y-0.5 hover:bg-white/10;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-[rgba(236,231,218,0.25)] bg-white/10 px-5 py-2.5 font-semibold text-on-ink transition hover:bg-white/20;
+  }
+  .field {
+    @apply mt-1.5 w-full rounded-xl border-[1.5px] border-paper-2 bg-cloud px-4 py-3 outline-none transition focus:border-amber focus:shadow-[0_0_0_3px_rgba(232,165,49,0.18)];
+  }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.22em] text-amber-deep; }
+  .card { @apply rounded-card border border-paper-2 bg-cloud p-6; }
+}
