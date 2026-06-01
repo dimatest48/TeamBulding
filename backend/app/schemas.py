@@ -30,6 +30,11 @@ class UserUpdate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
 
 
+class UserSync(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    email: EmailStr
+
+
 class VerifyRequest(BaseModel):
     token: str = Field(min_length=8, max_length=64)
 
@@ -60,8 +65,37 @@ class SubjectRead(BaseModel):
     name: str
     color: str
     task_count: int = 0
+    role: str = "owner"
+    shared: bool = False
 
     model_config = {"from_attributes": True}
+
+
+Role = Literal["owner", "editor", "viewer"]
+
+
+class SubjectInviteCreate(BaseModel):
+    email: EmailStr
+    role: Literal["editor", "viewer"] = "editor"
+
+
+class SubjectInviteRead(BaseModel):
+    id: int
+    subject_id: int
+    subject_name: str
+    email: EmailStr
+    role: Literal["editor", "viewer"]
+    status: str
+    token: str
+    expires_at: datetime
+
+
+class SubjectMemberRead(BaseModel):
+    id: int
+    user_id: int
+    email: EmailStr
+    name: str
+    role: Role
 
 
 # ---------- Tasks ----------
@@ -78,7 +112,7 @@ class TaskCreate(BaseModel):
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    notes: Optional[str] = Field(default=None, max_length=2000)
+    notes: Optional[str] = Field(default=None, max_length=20000)
     priority: Optional[Priority] = None
     due_date: Optional[datetime] = None
     subject_id: Optional[int] = None
@@ -93,5 +127,43 @@ class TaskRead(BaseModel):
     due_date: Optional[datetime]
     completed: bool
     subject_id: Optional[int]
+    owner_id: int
+
+    model_config = {"from_attributes": True}
+
+
+class StudySessionCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    planned_for: Optional[datetime] = None
+
+
+class StudySessionUpdate(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    planned_for: Optional[datetime] = None
+    completed: Optional[bool] = None
+
+
+class StudySessionRead(BaseModel):
+    id: int
+    task_id: int
+    title: str
+    planned_for: Optional[datetime]
+    completed: bool
+
+    model_config = {"from_attributes": True}
+
+
+class TaskAttachmentCreate(BaseModel):
+    filename: str = Field(min_length=1, max_length=200)
+    mime_type: str = Field(min_length=1, max_length=80)
+    data_url: str = Field(min_length=1)
+
+
+class TaskAttachmentRead(BaseModel):
+    id: int
+    task_id: int
+    filename: str
+    mime_type: str
+    data_url: str
 
     model_config = {"from_attributes": True}

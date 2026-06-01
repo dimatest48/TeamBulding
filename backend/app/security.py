@@ -140,15 +140,40 @@ def _get_or_create_clerk_user(payload: dict, db: Session) -> User:
     if not clerk_user_id:
         raise _credentials_error()
 
+    token_email = (
+        payload.get("email")
+        or payload.get("primary_email_address")
+        or payload.get("email_address")
+    )
+    token_name = payload.get("name") or payload.get("full_name") or payload.get("first_name")
+
     user = db.scalar(select(User).where(User.clerk_user_id == clerk_user_id))
     if user:
+        if token_email and user.email.endswith("@clerk.local"):
+            user.email = str(token_email).lower()
+        if token_name and user.name == "Student":
+            user.name = str(token_name)
+        if token_email or token_name:
+            db.commit()
+            db.refresh(user)
         return user
 
-    email = f"{clerk_user_id}@clerk.local"
+    email = str(token_email).lower() if token_email else f"{clerk_user_id}@clerk.local"
+    if token_email:
+        existing_user = db.scalar(select(User).where(User.email == email))
+        if existing_user and existing_user.clerk_user_id is None:
+            existing_user.clerk_user_id = clerk_user_id
+            existing_user.email_verified = True
+            if token_name:
+                existing_user.name = str(token_name)
+            db.commit()
+            db.refresh(existing_user)
+            return existing_user
+
     user = User(
         clerk_user_id=clerk_user_id,
         email=email.lower(),
-        name="Student",
+        name=str(token_name) if token_name else "Student",
         hashed_password="clerk-managed",
         email_verified=True,
     )

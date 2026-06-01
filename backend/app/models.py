@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -28,6 +28,9 @@ class User(Base):
     tasks: Mapped[list["Task"]] = relationship(
         back_populates="owner", cascade="all, delete-orphan"
     )
+    memberships: Mapped[list["SubjectMember"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Subject(Base):
@@ -43,6 +46,12 @@ class Subject(Base):
 
     owner: Mapped["User"] = relationship(back_populates="subjects")
     tasks: Mapped[list["Task"]] = relationship(
+        back_populates="subject", cascade="all, delete-orphan"
+    )
+    members: Mapped[list["SubjectMember"]] = relationship(
+        back_populates="subject", cascade="all, delete-orphan"
+    )
+    invites: Mapped[list["SubjectInvite"]] = relationship(
         back_populates="subject", cascade="all, delete-orphan"
     )
 
@@ -66,6 +75,80 @@ class Task(Base):
 
     owner: Mapped["User"] = relationship(back_populates="tasks")
     subject: Mapped["Subject | None"] = relationship(back_populates="tasks")
+    study_sessions: Mapped[list["StudySession"]] = relationship(
+        back_populates="task", cascade="all, delete-orphan"
+    )
+    attachments: Mapped[list["TaskAttachment"]] = relationship(
+        back_populates="task", cascade="all, delete-orphan"
+    )
+
+
+class SubjectMember(Base):
+    __tablename__ = "subject_members"
+    __table_args__ = (UniqueConstraint("subject_id", "user_id", name="uq_subject_members_subject_user"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    subject_id: Mapped[int] = mapped_column(
+        ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    role: Mapped[str] = mapped_column(String(20), default="editor", nullable=False)
+    joined_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+
+    subject: Mapped["Subject"] = relationship(back_populates="members")
+    user: Mapped["User"] = relationship(back_populates="memberships")
+
+
+class SubjectInvite(Base):
+    __tablename__ = "subject_invites"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    subject_id: Mapped[int] = mapped_column(
+        ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    token: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    role: Mapped[str] = mapped_column(String(20), default="editor", nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
+    invited_by_user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+
+    subject: Mapped["Subject"] = relationship(back_populates="invites")
+
+
+class StudySession(Base):
+    __tablename__ = "study_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    planned_for: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+
+    task: Mapped["Task"] = relationship(back_populates="study_sessions")
+
+
+class TaskAttachment(Base):
+    __tablename__ = "task_attachments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    filename: Mapped[str] = mapped_column(String(200), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    data_url: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+
+    task: Mapped["Task"] = relationship(back_populates="attachments")
 
 
 class RevokedToken(Base):
