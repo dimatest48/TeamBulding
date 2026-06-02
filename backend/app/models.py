@@ -81,6 +81,15 @@ class Task(Base):
     attachments: Mapped[list["TaskAttachment"]] = relationship(
         back_populates="task", cascade="all, delete-orphan"
     )
+    collaborators: Mapped[list["TaskCollaborator"]] = relationship(
+        back_populates="task", cascade="all, delete-orphan"
+    )
+    share_invites: Mapped[list["TaskShareInvite"]] = relationship(
+        back_populates="task", cascade="all, delete-orphan"
+    )
+    share_links: Mapped[list["TaskShareLink"]] = relationship(
+        back_populates="task", cascade="all, delete-orphan"
+    )
 
 
 class SubjectMember(Base):
@@ -149,6 +158,69 @@ class TaskAttachment(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
 
     task: Mapped["Task"] = relationship(back_populates="attachments")
+
+
+class TaskCollaborator(Base):
+    """A user granted view/edit access to a single task (EP-06: task sharing)."""
+
+    __tablename__ = "task_collaborators"
+    __table_args__ = (
+        UniqueConstraint("task_id", "user_id", name="uq_task_collaborators_task_user"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    role: Mapped[str] = mapped_column(String(20), default="viewer", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+
+    task: Mapped["Task"] = relationship(back_populates="collaborators")
+    user: Mapped["User"] = relationship()
+
+
+class TaskShareInvite(Base):
+    """An email invite to collaborate on a task; redeemed into a TaskCollaborator (T-30)."""
+
+    __tablename__ = "task_share_invites"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    token: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    role: Mapped[str] = mapped_column(String(20), default="viewer", nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
+    invited_by_user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+
+    task: Mapped["Task"] = relationship(back_populates="share_invites")
+
+
+class TaskShareLink(Base):
+    """A shareable link granting view/edit access to a task, active until revoked (T-31)."""
+
+    __tablename__ = "task_share_links"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    token: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    role: Mapped[str] = mapped_column(String(20), default="viewer", nullable=False)
+    created_by_user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+
+    task: Mapped["Task"] = relationship(back_populates="share_links")
 
 
 class RevokedToken(Base):

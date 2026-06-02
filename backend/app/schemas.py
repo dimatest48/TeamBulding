@@ -128,6 +128,11 @@ class TaskRead(BaseModel):
     completed: bool
     subject_id: Optional[int]
     owner_id: int
+    # EP-06 sharing context (computed per requesting user)
+    role: Role = "owner"
+    owner_name: Optional[str] = None
+    shared_with_me: bool = False
+    shared: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -167,3 +172,55 @@ class TaskAttachmentRead(BaseModel):
     data_url: str
 
     model_config = {"from_attributes": True}
+
+
+# ---------- Task sharing (EP-06) ----------
+ShareRole = Literal["editor", "viewer"]
+
+
+class TaskShareInviteCreate(BaseModel):
+    email: EmailStr
+    role: ShareRole = "viewer"
+
+
+class TaskInviteRead(BaseModel):
+    id: int
+    task_id: int
+    task_title: str
+    email: EmailStr
+    role: ShareRole
+    status: str
+    token: str
+    invited_by_name: Optional[str] = None
+
+
+class TaskCollaboratorRead(BaseModel):
+    id: int
+    user_id: int
+    email: EmailStr
+    name: str
+    role: Role
+
+
+class TaskShareLinkCreate(BaseModel):
+    role: ShareRole = "viewer"
+
+
+class TaskShareLinkRead(BaseModel):
+    id: int
+    task_id: int
+    token: str
+    role: ShareRole
+    revoked: bool = False
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class SharePreview(BaseModel):
+    """Minimal task info exposed to an unauthenticated user opening a share link (T-34)."""
+
+    task_id: int
+    title: str
+    owner_name: str
+    role: ShareRole

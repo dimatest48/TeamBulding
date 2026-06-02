@@ -34,6 +34,36 @@ def send_verification_email(to_email: str, name: str, token: str) -> None:
         print("=" * 70 + "\n", flush=True)
         return
 
+    _deliver(to_email, subject, body)
+
+
+def send_task_share_email(
+    to_email: str, inviter_name: str, task_title: str, role: str, token: str
+) -> None:
+    """Notify a user that a task was shared with them by email (EP-06 T-30)."""
+    link = f"{FRONTEND_URL}/cabinet?task_invite={token}"
+    subject = f"{inviter_name} shared a task with you on Tasker"
+    body = (
+        f"Hi,\n\n"
+        f"{inviter_name} shared the task \"{task_title}\" with you "
+        f"({role} access).\n\n"
+        f"Sign in to Tasker and accept it here:\n\n{link}\n\n"
+        f"You'll also find it waiting under Invitations after you log in.\n"
+    )
+    _deliver(to_email, subject, body)
+
+
+def _deliver(to_email: str, subject: str, body: str) -> None:
+    if not SMTP_HOST:
+        # Dev mode: print to console so the flow is testable without SMTP.
+        print("\n" + "=" * 70)
+        print("[email] DEV MODE — no SMTP configured. Message below:")
+        print(f"[email] To: {to_email}")
+        print(f"[email] Subject: {subject}")
+        print(body)
+        print("=" * 70 + "\n", flush=True)
+        return
+
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = SMTP_FROM
