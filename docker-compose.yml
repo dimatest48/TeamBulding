@@ -6,11 +6,11 @@ services:
       POSTGRES_PASSWORD: tracker
       POSTGRES_DB: student_tracker
     ports:
-      - "55432:5432"
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tracker -d student_tracker"]
+      test: [ "CMD-SHELL", "pg_isready -U tracker -d student_tracker" ]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -31,7 +31,7 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-no-reply@tasker.local}
     ports:
-      - "8001:8000"
+      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
