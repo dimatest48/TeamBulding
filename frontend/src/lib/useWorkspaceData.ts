@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useApi } from "./api";
 import { dedupeTasks } from "./tasks";
-import type { Invite, Subject, Task, UserRead } from "./types";
+import type { Invite, Subject, Task, TaskInvite, UserRead } from "./types";
 
 /** Loads subjects, tasks, invites, and the current user; syncs Clerk profile to the backend. */
 export function useWorkspaceData() {
@@ -11,20 +11,23 @@ export function useWorkspaceData() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
+  const [taskInvites, setTaskInvites] = useState<TaskInvite[]>([]);
   const [me, setMe] = useState<UserRead | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     try {
-      const [sRes, tRes, iRes, meRes] = await Promise.all([
+      const [sRes, tRes, iRes, tiRes, meRes] = await Promise.all([
         apiFetch("/subjects"),
         apiFetch("/tasks"),
         apiFetch("/invites"),
+        apiFetch("/task-invites"),
         apiFetch("/users/me"),
       ]);
       if (sRes.ok) setSubjects(await sRes.json());
       if (tRes.ok) setTasks(dedupeTasks(await tRes.json()));
       if (iRes.ok) setInvites(await iRes.json());
+      if (tiRes.ok) setTaskInvites(await tiRes.json());
       if (meRes.ok) setMe(await meRes.json());
     } finally {
       setLoading(false);
@@ -41,5 +44,5 @@ export function useWorkspaceData() {
     }).finally(load);
   }, [apiFetch, load, user?.firstName, user?.fullName, user?.primaryEmailAddress?.emailAddress]);
 
-  return { apiFetch, subjects, tasks, invites, me, loading, load };
+  return { apiFetch, subjects, tasks, invites, taskInvites, me, loading, load };
 }

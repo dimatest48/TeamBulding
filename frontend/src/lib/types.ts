@@ -9,6 +9,9 @@ export type Subject = {
 
 export type Priority = "low" | "medium" | "high";
 
+export type Role = "owner" | "editor" | "viewer";
+export type ShareRole = "editor" | "viewer";
+
 export type Task = {
   id: number;
   title: string;
@@ -18,6 +21,46 @@ export type Task = {
   completed: boolean;
   subject_id: number | null;
   owner_id: number;
+  // EP-06 sharing context (computed per requesting user)
+  role: Role;
+  owner_name: string | null;
+  shared_with_me: boolean;
+  shared: boolean;
+};
+
+export type TaskCollaborator = {
+  id: number;
+  user_id: number;
+  email: string;
+  name: string;
+  role: Role;
+};
+
+export type TaskShareLink = {
+  id: number;
+  task_id: number;
+  token: string;
+  role: ShareRole;
+  revoked: boolean;
+  created_at: string;
+};
+
+export type TaskInvite = {
+  id: number;
+  task_id: number;
+  task_title: string;
+  email: string;
+  role: ShareRole;
+  status: string;
+  token: string;
+  invited_by_name: string | null;
+};
+
+export type SharePreview = {
+  task_id: number;
+  title: string;
+  owner_name: string;
+  role: ShareRole;
 };
 
 export type Invite = {

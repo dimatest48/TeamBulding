@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Image as ImageIcon, Maximize2, Plus, X } from "lucide-react";
+import { Eye, Image as ImageIcon, Maximize2, Pencil, Plus, Share2, X } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { EditableTitle } from "../components/EditableTitle";
+import { ShareModal } from "../components/ShareModal";
+import { useConfirm } from "../components/ConfirmDialog";
+import { useToast } from "../components/Toast";
 import { useWorkspaceData } from "../lib/useWorkspaceData";
 import { dateOnly } from "../lib/tasks";
 import type { Priority, StudySession, TaskAttachment } from "../lib/types";
@@ -12,9 +15,15 @@ export function TaskDetailPage() {
   const { taskId } = useParams();
   const id = Number(taskId);
   const navigate = useNavigate();
+  const toast = useToast();
+  const { confirm, dialog } = useConfirm();
   const { apiFetch, subjects, tasks, load } = useWorkspaceData();
   const task = tasks.find((item) => item.id === id);
   const subject = subjects.find((item) => item.id === task?.subject_id);
+  const isOwner = task?.role === "owner";
+  const canEdit = task?.role === "owner" || task?.role === "editor";
+  const viewOnly = Boolean(task) && !canEdit;
+  const [sharing, setSharing] = useState(false);
   const [title, setTitle] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
@@ -128,13 +137,16 @@ export function TaskDetailPage() {
     <AppShell>
       <header className="mb-9 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link className="text-sm font-semibold text-dim transition hover:text-fg" to="/tasks">
-            Back to tasks
+          <Link
+            className="text-sm font-semibold text-dim transition hover:text-fg"
+            to={task?.shared_with_me ? "/shared" : "/tasks"}
+          >
+            {task?.shared_with_me ? "Back to shared with me" : "Back to tasks"}
           </Link>
           <EditableTitle
             className="mt-2 font-display text-3xl font-semibold sm:text-4xl"
             value={task?.title || "Task details"}
-            editable={Boolean(task)}
+            editable={Boolean(task) && canEdit}
             placeholder="Task details"
             onSave={async (title) => {
               if (!task) return;
@@ -142,12 +154,27 @@ export function TaskDetailPage() {
               if (r.ok) await load();
             }}
           />
-          <p className="mt-2 text-sm text-dim">
-            {subject?.name || "No subject"}
-            {task?.due_date ? ` · due ${dateOnly(task.due_date)}` : ""}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-dim">
+            <span>
+              {subject?.name || "No subject"}
+              {task?.due_date ? ` · due ${dateOnly(task.due_date)}` : ""}
+            </span>
+            {task?.shared_with_me && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/[0.04] px-2.5 py-1 text-xs font-semibold">
+                {viewOnly ? <Eye size={13} className="text-accent" /> : <Pencil size={13} className="text-accent" />}
+                {viewOnly ? "View only" : "Can edit"} · shared by {task.owner_name ?? "someone"}
+              </span>
+            )}
+          </div>
         </div>
-        <UserButton afterSignOutUrl="/" />
+        <div className="flex items-center gap-3">
+          {task && isOwner && (
+            <button className="btn-ghost" type="button" onClick={() => setSharing(true)}>
+              <Share2 size={17} /> Share
+            </button>
+          )}
+          <UserButton afterSignOutUrl="/" />
+        </div>
       </header>
 
       {!task ? (
@@ -162,21 +189,28 @@ export function TaskDetailPage() {
                 <h2 className="text-2xl">Draft</h2>
                 <p className="mt-1 text-sm text-dim">Write study notes and paste screenshots directly into this task.</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  className="btn-outline px-4 py-2"
-                  type="button"
-                  onClick={() => {
-                    setScreenshotHelp(true);
-                    draftRef.current?.focus();
-                  }}
-                >
-                  <ImageIcon size={17} /> Add screenshot
-                </button>
-                <button className="btn-primary px-4 py-2" type="button" onClick={saveDraft} disabled={savingDraft}>
-                  {savingDraft ? "Saving..." : "Save draft"}
-                </button>
-              </div>
+              {!viewOnly && (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="btn-outline px-4 py-2"
+                    type="button"
+                    onClick={() => {
+                      setScreenshotHelp(true);
+                      draftRef.current?.focus();
+                    }}
+                  >
+                    <ImageIcon size={17} /> Add screenshot
+                  </button>
+                  <button className="btn-primary px-4 py-2" type="button" onClick={saveDraft} disabled={savingDraft}>
+                    {savingDraft ? "Saving..." : "Save draft"}
+                  </button>
+                </div>
+              )}
+              {viewOnly && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-dim">
+                  <Eye size={13} /> View only
+                </span>
+              )}
             </div>
             {screenshotHelp && (
               <div className="rounded-xl border border-accent/30 bg-accent/[0.08] p-4 text-sm text-dim">
@@ -186,39 +220,49 @@ export function TaskDetailPage() {
             )}
             <textarea
               ref={draftRef}
-              className="field min-h-[300px] text-base leading-relaxed"
+              className={`field min-h-[300px] text-base leading-relaxed ${viewOnly ? "cursor-not-allowed opacity-70" : ""}`}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               onPaste={handleDraftPaste}
-              placeholder="Write notes for this task. Use macOS screenshot to clipboard, then paste here."
+              readOnly={viewOnly}
+              title={viewOnly ? "View only — you don't have edit access" : undefined}
+              placeholder={viewOnly ? "No notes yet." : "Write notes for this task. Use macOS screenshot to clipboard, then paste here."}
             />
             <div
               className="rounded-xl border border-dashed border-line bg-white/[0.02] p-4 transition hover:border-accent/60"
               onDragOver={(event) => event.preventDefault()}
-              onDrop={handleImageDrop}
+              onDrop={viewOnly ? undefined : handleImageDrop}
             >
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-dim">
                   <ImageIcon size={18} /> Visual notes
                 </div>
-                <label className="btn-outline cursor-pointer px-4 py-2 text-sm">
-                  Add image
-                  <input
-                    className="hidden"
-                    type="file"
-                    accept="image/*"
-                    onChange={async (event) => {
-                      const file = event.target.files?.[0];
-                      if (file) await uploadImage(file);
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
+                {!viewOnly && (
+                  <label className="btn-outline cursor-pointer px-4 py-2 text-sm">
+                    Add image
+                    <input
+                      className="hidden"
+                      type="file"
+                      accept="image/*"
+                      onChange={async (event) => {
+                        const file = event.target.files?.[0];
+                        if (file) await uploadImage(file);
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                )}
               </div>
               {attachments.length === 0 ? (
                 <div className="grid min-h-[140px] place-items-center rounded-xl border border-line bg-white/[0.02] px-5 py-8 text-center">
                   <p className="max-w-[36ch] text-sm text-dim">
-                    Paste a screenshot with <strong className="text-fg">Cmd + V</strong>, drag an image here, or add an image file.
+                    {viewOnly ? (
+                      "No images attached to this task."
+                    ) : (
+                      <>
+                        Paste a screenshot with <strong className="text-fg">Cmd + V</strong>, drag an image here, or add an image file.
+                      </>
+                    )}
                   </p>
                 </div>
               ) : (
@@ -251,17 +295,19 @@ export function TaskDetailPage() {
                           >
                             Download
                           </a>
-                          <button
-                            className="grid h-7 w-7 place-items-center rounded-full hover:bg-rose/10 hover:text-rose"
-                            type="button"
-                            aria-label="Delete image"
-                            onClick={async () => {
-                              const response = await apiFetch(`/task-attachments/${attachment.id}`, { method: "DELETE" });
-                              if (response.ok) await loadAttachments();
-                            }}
-                          >
-                            <X size={15} />
-                          </button>
+                          {!viewOnly && (
+                            <button
+                              className="grid h-7 w-7 place-items-center rounded-full hover:bg-rose/10 hover:text-rose"
+                              type="button"
+                              aria-label="Delete image"
+                              onClick={async () => {
+                                const response = await apiFetch(`/task-attachments/${attachment.id}`, { method: "DELETE" });
+                                if (response.ok) await loadAttachments();
+                              }}
+                            >
+                              <X size={15} />
+                            </button>
+                          )}
                         </div>
                       </figcaption>
                     </figure>
@@ -294,14 +340,36 @@ export function TaskDetailPage() {
 
           <aside className="space-y-6">
             <form className="card space-y-4" onSubmit={saveTask}>
-              <h2 className="text-2xl">Task settings</h2>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-2xl">Task settings</h2>
+                {viewOnly && (
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/[0.03] px-2.5 py-1 text-xs font-semibold text-dim"
+                    title="You don't have edit access to this task"
+                  >
+                    <Eye size={13} /> View only
+                  </span>
+                )}
+              </div>
               <label className="block">
                 <span className="text-sm font-semibold text-dim">Title</span>
-                <input className="field" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <input
+                  className={`field ${viewOnly ? "cursor-not-allowed opacity-70" : ""}`}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  disabled={viewOnly}
+                  title={viewOnly ? "View only — you don't have edit access" : undefined}
+                />
               </label>
               <label className="block">
                 <span className="text-sm font-semibold text-dim">Subject</span>
-                <select className="field" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
+                <select
+                  className={`field ${viewOnly ? "cursor-not-allowed opacity-70" : ""}`}
+                  value={subjectId}
+                  onChange={(e) => setSubjectId(e.target.value)}
+                  disabled={viewOnly}
+                  title={viewOnly ? "View only — you don't have edit access" : undefined}
+                >
                   <option value="">No subject</option>
                   {subjects.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -313,7 +381,13 @@ export function TaskDetailPage() {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                 <label className="block">
                   <span className="text-sm font-semibold text-dim">Priority</span>
-                  <select className="field" value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
+                  <select
+                    className={`field ${viewOnly ? "cursor-not-allowed opacity-70" : ""}`}
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as Priority)}
+                    disabled={viewOnly}
+                    title={viewOnly ? "View only — you don't have edit access" : undefined}
+                  >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
@@ -321,62 +395,89 @@ export function TaskDetailPage() {
                 </label>
                 <label className="block">
                   <span className="text-sm font-semibold text-dim">Due date</span>
-                  <input className="field" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                  <input
+                    className={`field ${viewOnly ? "cursor-not-allowed opacity-70" : ""}`}
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    disabled={viewOnly}
+                    title={viewOnly ? "View only — you don't have edit access" : undefined}
+                  />
                 </label>
               </div>
-              <div className="grid gap-3">
-                <button className="btn-primary w-full" type="submit">
-                  Save settings
-                </button>
-                <button
-                  className="btn-outline w-full"
-                  type="button"
-                  onClick={async () => {
-                    const response = await apiFetch(`/tasks/${task.id}`, {
-                      method: "PATCH",
-                      body: JSON.stringify({ completed: !task.completed }),
-                    });
-                    if (response.ok) await load();
-                  }}
-                >
-                  {task.completed ? "Mark active" : "Mark complete"}
-                </button>
-                <button
-                  className="btn-outline w-full text-rose"
-                  type="button"
-                  onClick={async () => {
-                    if (!window.confirm("Delete this task?")) return;
-                    const response = await apiFetch(`/tasks/${task.id}`, { method: "DELETE" });
-                    if (response.ok) navigate("/tasks");
-                  }}
-                >
-                  Delete task
-                </button>
-              </div>
+              {viewOnly ? (
+                <p className="rounded-xl border border-line bg-white/[0.03] p-3.5 text-sm text-dim">
+                  You have view-only access. Ask {task.owner_name ?? "the owner"} for edit access to make changes.
+                </p>
+              ) : (
+                <div className="grid gap-3">
+                  <button className="btn-primary w-full" type="submit">
+                    Save settings
+                  </button>
+                  <button
+                    className="btn-outline w-full"
+                    type="button"
+                    onClick={async () => {
+                      const response = await apiFetch(`/tasks/${task.id}`, {
+                        method: "PATCH",
+                        body: JSON.stringify({ completed: !task.completed }),
+                      });
+                      if (response.ok) await load();
+                    }}
+                  >
+                    {task.completed ? "Mark active" : "Mark complete"}
+                  </button>
+                  {isOwner && (
+                    <button
+                      className="btn-outline w-full text-rose"
+                      type="button"
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: "Delete this task?",
+                          message: "This permanently removes the task and revokes access for anyone it's shared with.",
+                          confirmLabel: "Delete task",
+                        });
+                        if (!ok) return;
+                        const response = await apiFetch(`/tasks/${task.id}`, { method: "DELETE" });
+                        if (response.ok) {
+                          toast.success("Task deleted");
+                          navigate("/tasks");
+                        } else {
+                          toast.error("Could not delete the task");
+                        }
+                      }}
+                    >
+                      Delete task
+                    </button>
+                  )}
+                </div>
+              )}
             </form>
 
             <section className="card">
               <h2 className="mb-5 text-2xl">Study sessions</h2>
-              <div className="mb-4 grid gap-3">
-                <input className="field" value={sessionTitle} onChange={(e) => setSessionTitle(e.target.value)} placeholder="New study session" />
-                <button
-                  className="btn-primary w-full"
-                  type="button"
-                  onClick={async () => {
-                    if (!sessionTitle.trim()) return;
-                    const response = await apiFetch(`/tasks/${task.id}/study-sessions`, {
-                      method: "POST",
-                      body: JSON.stringify({ title: sessionTitle.trim() }),
-                    });
-                    if (response.ok) {
-                      setSessionTitle("");
-                      await loadSessions();
-                    }
-                  }}
-                >
-                  <Plus size={18} /> Add session
-                </button>
-              </div>
+              {!viewOnly && (
+                <div className="mb-4 grid gap-3">
+                  <input className="field" value={sessionTitle} onChange={(e) => setSessionTitle(e.target.value)} placeholder="New study session" />
+                  <button
+                    className="btn-primary w-full"
+                    type="button"
+                    onClick={async () => {
+                      if (!sessionTitle.trim()) return;
+                      const response = await apiFetch(`/tasks/${task.id}/study-sessions`, {
+                        method: "POST",
+                        body: JSON.stringify({ title: sessionTitle.trim() }),
+                      });
+                      if (response.ok) {
+                        setSessionTitle("");
+                        await loadSessions();
+                      }
+                    }}
+                  >
+                    <Plus size={18} /> Add session
+                  </button>
+                </div>
+              )}
               <div className="space-y-2">
                 {sessions.length === 0 && (
                   <p className="rounded-xl border border-line bg-white/[0.03] p-4 text-sm text-dim">No study sessions yet.</p>
@@ -386,6 +487,7 @@ export function TaskDetailPage() {
                     <input
                       type="checkbox"
                       checked={session.completed}
+                      disabled={viewOnly}
                       onChange={async () => {
                         const response = await apiFetch(`/study-sessions/${session.id}`, {
                           method: "PATCH",
@@ -402,6 +504,9 @@ export function TaskDetailPage() {
           </aside>
         </div>
       )}
+
+      {sharing && task && <ShareModal task={task} apiFetch={apiFetch} onClose={() => setSharing(false)} />}
+      {dialog}
     </AppShell>
   );
 }

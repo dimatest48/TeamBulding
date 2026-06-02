@@ -15,16 +15,18 @@ import { isOverdue, sortTasks } from "../lib/tasks";
 
 export function CabinetPage() {
   const { user } = useUser();
-  const { apiFetch, subjects, tasks, invites, me, loading, load } = useWorkspaceData();
+  const { apiFetch, subjects, tasks, invites, taskInvites, me, loading, load } = useWorkspaceData();
   const [searchParams, setSearchParams] = useSearchParams();
   const firstName = user?.firstName || user?.fullName?.split(" ")[0] || "there";
 
   const overdue = useMemo(() => sortTasks(tasks.filter(isOverdue), "due"), [tasks]);
 
   useEffect(() => {
-    const token = searchParams.get("invite");
-    if (!token) return;
-    apiFetch(`/invites/${token}/accept`, { method: "POST" }).finally(async () => {
+    const subjectToken = searchParams.get("invite");
+    const taskToken = searchParams.get("task_invite");
+    if (!subjectToken && !taskToken) return;
+    const path = subjectToken ? `/invites/${subjectToken}/accept` : `/task-invites/${taskToken}/accept`;
+    apiFetch(path, { method: "POST" }).finally(async () => {
       setSearchParams({});
       await load();
     });
@@ -48,7 +50,7 @@ export function CabinetPage() {
           if (response.ok) await load();
         }}
       />
-      <InvitationsPanel invites={invites} apiFetch={apiFetch} reload={load} />
+      <InvitationsPanel invites={invites} taskInvites={taskInvites} apiFetch={apiFetch} reload={load} />
 
       <OverduePanel tasks={overdue} subjects={subjects} apiFetch={apiFetch} reload={load} />
 
