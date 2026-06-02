@@ -7,6 +7,7 @@ import { TasksPage } from "./pages/TasksPage";
 import { SubjectsPage } from "./pages/SubjectsPage";
 import { SubjectPage } from "./pages/SubjectPage";
 import { TaskDetailPage } from "./pages/TaskDetailPage";
+import { SharedWithMePage } from "./pages/SharedWithMePage";
 import { ProfilePage } from "./pages/ProfilePage";
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -24,6 +25,7 @@ export function App() {
         <Route path="/cabinet" element={<RequireAuth><CabinetPage /></RequireAuth>} />
         <Route path="/tasks" element={<RequireAuth><TasksPage /></RequireAuth>} />
         <Route path="/tasks/:taskId" element={<RequireAuth><TaskDetailPage /></RequireAuth>} />
+        <Route path="/shared" element={<RequireAuth><SharedWithMePage /></RequireAuth>} />
         <Route path="/subjects" element={<RequireAuth><SubjectsPage /></RequireAuth>} />
         <Route path="/subjects/:subjectId" element={<RequireAuth><SubjectPage /></RequireAuth>} />
         <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />

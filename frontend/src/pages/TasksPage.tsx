@@ -16,17 +16,19 @@ export function TasksPage() {
   const [composing, setComposing] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const wantNew = searchParams.get("new") !== null;
-  const hasTasks = tasks.length > 0;
+  // Tasks shared *with* me live on the dedicated "Shared with me" page (T-33).
+  const myTasks = tasks.filter((task) => !task.shared_with_me);
+  const hasTasks = myTasks.length > 0;
 
   // Arriving from the dashboard "Create task" button: open the composer (empty)
   // or focus the inline form (non-empty), then clear the flag from the URL.
   useEffect(() => {
     if (!wantNew || loading) return;
-    if (tasks.length === 0) setComposing(true);
+    if (myTasks.length === 0) setComposing(true);
     const next = new URLSearchParams(searchParams);
     next.delete("new");
     setSearchParams(next, { replace: true });
-  }, [wantNew, loading, tasks.length, searchParams, setSearchParams]);
+  }, [wantNew, loading, myTasks.length, searchParams, setSearchParams]);
 
   const createTask = async (title: string) => {
     const response = await apiFetch("/tasks", {
@@ -47,7 +49,7 @@ export function TasksPage() {
           actions={<UserButton afterSignOutUrl="/" />}
         />
         {hasTasks ? (
-          <TaskList tasks={tasks} subjects={subjects} apiFetch={apiFetch} reload={load} autoFocusNew={wantNew} />
+          <TaskList tasks={myTasks} subjects={subjects} apiFetch={apiFetch} reload={load} autoFocusNew={wantNew} />
         ) : loading ? (
           <div className="grid min-h-[40vh] place-items-center text-sm text-dim">Loading…</div>
         ) : (

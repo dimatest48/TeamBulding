@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   ListTodo,
   LogOut,
+  Share2,
   User as UserIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -17,6 +18,7 @@ type NavItem = { to: string; label: string; icon: LucideIcon };
 const PRIMARY: NavItem[] = [{ to: "/cabinet", label: "Overview", icon: LayoutDashboard }];
 const WORKSPACE: NavItem[] = [
   { to: "/tasks", label: "Tasks", icon: ListTodo },
+  { to: "/shared", label: "Shared with me", icon: Share2 },
   { to: "/subjects", label: "Subjects", icon: Folders },
 ];
 const SECONDARY: NavItem[] = [{ to: "/profile", label: "Profile", icon: UserIcon }];
