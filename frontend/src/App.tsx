@@ -8,6 +8,7 @@ import { SubjectsPage } from "./pages/SubjectsPage";
 import { SubjectPage } from "./pages/SubjectPage";
 import { TaskDetailPage } from "./pages/TaskDetailPage";
 import { SharedWithMePage } from "./pages/SharedWithMePage";
+import { SharePage } from "./pages/SharePage";
 import { ProfilePage } from "./pages/ProfilePage";
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -22,6 +23,8 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        {/* Public deep-link landing — handles its own auth gating (T-34) */}
+        <Route path="/share/:token" element={<SharePage />} />
         <Route path="/cabinet" element={<RequireAuth><CabinetPage /></RequireAuth>} />
         <Route path="/tasks" element={<RequireAuth><TasksPage /></RequireAuth>} />
         <Route path="/tasks/:taskId" element={<RequireAuth><TaskDetailPage /></RequireAuth>} />
