@@ -4,26 +4,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: {
-          DEFAULT: "#14182b",
-          soft: "#232843",
-          line: "#2e3450",
-        },
-        paper: {
-          DEFAULT: "#f7f3ea",
-          2: "#efe8d8",
-        },
-        cloud: "#fbfaf6",
-        amber: {
-          DEFAULT: "#e8a531",
-          deep: "#c97f1c",
-        },
-        rose: "#e0573e",
+        // Dark surfaces
+        canvas: "#08080a",
+        panel: "#111114",
+        elevated: "#16161a",
+        line: "rgba(255,255,255,0.08)",
+        "line-strong": "rgba(255,255,255,0.14)",
+        // Text
+        fg: "#f4f4f5",
+        dim: "#a1a1aa",
+        faint: "#71717a",
+        // Vibrant accents (chrome only)
+        accent: { DEFAULT: "#6366f1", 2: "#8b5cf6" },
+        // Semantic (priority / status)
+        amber: { DEFAULT: "#e8a531", deep: "#c97f1c" },
+        rose: "#f87171",
         sage: "#6f9b6e",
-        ink_text: "#1c2033",
-        dim: "#5d6178",
-        "on-ink": "#ece7da",
-        "on-ink-dim": "#9aa0bd",
       },
       fontFamily: {
         display: ['Fraunces', 'Georgia', 'serif'],
@@ -37,22 +33,18 @@ export default {
         "5.5": "1.375rem",
       },
       boxShadow: {
-        soft: "0 18px 50px -22px rgba(20, 24, 43, 0.45)",
-        "soft-sm": "0 6px 20px -10px rgba(20, 24, 43, 0.35)",
+        soft: "0 24px 60px -28px rgba(0, 0, 0, 0.8)",
+        "soft-sm": "0 8px 24px -12px rgba(0, 0, 0, 0.7)",
+        glow: "0 0 0 1px rgba(99,102,241,0.4), 0 12px 40px -12px rgba(99,102,241,0.55)",
       },
       keyframes: {
         rise: {
           "0%": { opacity: "0", transform: "translateY(18px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        floaty: {
-          "0%,100%": { transform: "rotate(1.4deg) translateY(0)" },
-          "50%": { transform: "rotate(1.4deg) translateY(-12px)" },
-        },
       },
       animation: {
         rise: "rise 0.7s ease forwards",
-        floaty: "floaty 7s ease-in-out infinite",
       },
     },
   },
