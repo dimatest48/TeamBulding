@@ -136,7 +136,7 @@ export function RubiksModel() {
 
   const makeSwing = (): Swing => {
     spinDir.current = spinDir.current > 0 ? -1 : 1;
-    const turns = 0.35 + Math.random() * 0.28; // ~30% slower top speed than before
+    const turns = 0.25 + Math.random() * 0.19; // another ~30% slower top speed
     const picked = pickSpinAxis(spinAxisIdx.current);
     spinAxisIdx.current = picked.idx;
     return { axis: picked.axis, total: spinDir.current * turns * TWO_PI, duration: SWING_SECONDS + Math.random() * 0.8, time: 0, prevAngle: 0, spawned: false };
@@ -171,7 +171,7 @@ export function RubiksModel() {
 
   /** Queue 1 (single) or 2 (double, opposite sides, staggered) slice turns onto the free pivots. */
   const issueMove = (moves: SliceMove[]) => {
-    const duration = cubeState.current === "scrambling" ? 1.4 : 1.7;
+    const duration = cubeState.current === "scrambling" ? 2.8 : 3.4;
     moves.forEach((m, i) => {
       slices.current.push({ ...m, pivot: pivots[i], time: 0, duration, delay: i * STAGGER, started: false, members: [], done: false });
     });

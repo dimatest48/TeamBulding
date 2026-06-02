@@ -41,7 +41,7 @@ services:
       context: ./frontend
       args:
         # Browser talks to the backend on the host's published port
-        VITE_API_URL: ${VITE_API_URL:-http://127.0.0.1:8001}
+        VITE_API_URL: ${VITE_API_URL:-http://127.0.0.1:8000}
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
     ports:
       - "5173:5173"

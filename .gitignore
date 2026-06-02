@@ -12,3 +12,6 @@ backend/student_tracker.db
 # Frontend build output / deps
 frontend/node_modules/
 frontend/dist/
+
+#Claude
+.claude/
