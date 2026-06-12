@@ -7,6 +7,7 @@ import {
   LogOut,
   Share2,
   User as UserIcon,
+  X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { UserButton, useAuth, useUser } from "@clerk/clerk-react";
@@ -23,7 +24,7 @@ const WORKSPACE: NavItem[] = [
 ];
 const SECONDARY: NavItem[] = [{ to: "/profile", label: "Profile", icon: UserIcon }];
 
-function NavRow({ item, active }: { item: NavItem; active: boolean }) {
+function NavRow({ item, active, onClick }: { item: NavItem; active: boolean; onClick?: () => void }) {
   const Icon = item.icon;
   return (
     <motion.div whileHover={{ x: 2 }} whileTap={{ scale: 0.96 }} transition={SPRING_SNAP} className="relative">
@@ -36,6 +37,7 @@ function NavRow({ item, active }: { item: NavItem; active: boolean }) {
       )}
       <Link
         to={item.to}
+        onClick={onClick}
         className={`relative flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition-colors ${
           active ? "text-fg" : "text-dim hover:text-fg"
         }`}
@@ -50,7 +52,7 @@ function NavRow({ item, active }: { item: NavItem; active: boolean }) {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ onClose }: { onClose?: () => void }) {
   const { signOut } = useAuth();
   const { user } = useUser();
   const navigate = useNavigate();
@@ -61,13 +63,25 @@ export function Sidebar() {
     to === "/cabinet" ? pathname === "/cabinet" : pathname === to || pathname.startsWith(`${to}/`);
 
   return (
-    <aside className="flex flex-col border-r border-line bg-panel/60 px-5 py-6 backdrop-blur md:min-h-screen">
-      <Link className="mb-9 flex items-center gap-2.5 font-display text-xl font-semibold text-fg" to="/">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent-2 text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.8)]">
-          <BookOpen size={18} />
-        </span>
-        Tasker
-      </Link>
+    <aside className="flex flex-col border-r border-line bg-panel px-5 py-6 backdrop-blur h-full min-h-screen md:bg-panel/60 md:min-h-screen">
+      <div className="mb-9 flex items-center justify-between">
+        <Link className="flex items-center gap-2.5 font-display text-xl font-semibold text-fg" to="/" onClick={onClose}>
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent-2 text-white shadow-[0_8px_24px_-8px_rgba(99,102,241,0.8)]">
+            <BookOpen size={18} />
+          </span>
+          Tasker
+        </Link>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-9 w-9 place-items-center rounded-xl border border-line bg-white/[0.03] text-dim hover:text-fg md:hidden"
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
+        )}
+      </div>
 
       <div className="mb-8 flex items-center gap-3 rounded-2xl border border-line bg-white/[0.03] p-3">
         <UserButton afterSignOutUrl="/" />
@@ -79,19 +93,19 @@ export function Sidebar() {
 
       <nav className="flex flex-1 flex-col gap-1.5">
         {PRIMARY.map((item) => (
-          <NavRow key={item.to} item={item} active={isActive(item.to)} />
+          <NavRow key={item.to} item={item} active={isActive(item.to)} onClick={onClose} />
         ))}
 
         <p className="mb-1 mt-5 px-4 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-faint">
           Workspace
         </p>
         {WORKSPACE.map((item) => (
-          <NavRow key={item.to} item={item} active={isActive(item.to)} />
+          <NavRow key={item.to} item={item} active={isActive(item.to)} onClick={onClose} />
         ))}
 
         <div className="my-4 h-px bg-line" />
         {SECONDARY.map((item) => (
-          <NavRow key={item.to} item={item} active={isActive(item.to)} />
+          <NavRow key={item.to} item={item} active={isActive(item.to)} onClick={onClose} />
         ))}
 
         <motion.button
@@ -100,7 +114,10 @@ export function Sidebar() {
           whileTap={{ scale: 0.96 }}
           transition={SPRING_SNAP}
           className="mt-1 flex items-center gap-3 rounded-xl px-4 py-3 text-left font-semibold text-dim transition-colors hover:text-rose"
-          onClick={() => signOut(() => navigate("/"))}
+          onClick={() => {
+            if (onClose) onClose();
+            signOut(() => navigate("/"));
+          }}
         >
           <motion.span {...navIconMotion} className="grid place-items-center">
             <LogOut size={18} />

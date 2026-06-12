@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import type { Subject, UserRead } from "../lib/types";
 import { PALETTE } from "../lib/tasks";
 
@@ -7,71 +7,121 @@ export function OnboardingPanel({
   me,
   subjects,
   onCreateSubject,
+  onCreateTask,
   onComplete,
 }: {
   me: UserRead | null;
   subjects: Subject[];
   onCreateSubject: (name: string, color: string) => Promise<void>;
+  onCreateTask: (title: string) => Promise<void>;
   onComplete: () => Promise<void>;
 }) {
+  const [step, setStep] = useState(1);
   const [subjectName, setSubjectName] = useState("");
-  const [goal, setGoal] = useState("Finish the week with no overdue tasks");
+  const [taskName, setTaskName] = useState("");
+
   if (!me || me.onboarding_completed) return null;
 
+  const skipOnboarding = async () => {
+    await onComplete();
+  };
+
   return (
-    <section className="card mb-9 border-accent/30 bg-gradient-to-br from-accent/[0.12] to-accent-2/[0.06]">
-      <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-        <div>
-          <p className="eyebrow">First setup</p>
-          <h2 className="mt-1 text-2xl">Build your study cabinet</h2>
-          <p className="mt-2 max-w-[56ch] text-sm leading-relaxed text-dim">
-            Add your first subjects and choose a semester goal. You can change everything later.
+    <section className="card mb-8 border-accent/30 bg-gradient-to-br from-accent/[0.12] to-accent-2/[0.06]">
+      {step === 1 && (
+        <div className="max-w-xl">
+          <p className="eyebrow">Welcome 👋</p>
+
+          <h2 className="mt-2 text-3xl font-semibold">
+            What subject do you have today?
+          </h2>
+
+          <p className="mt-3 text-sm text-dim">
+            Create your first subject to start organizing your studies.
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {subjects.map((subject) => (
-              <span
-                key={subject.id}
-                className="rounded-full border border-line bg-white/5 px-3 py-1 text-sm font-semibold text-fg"
+
+          <div className="mt-6 space-y-3">
+            <input
+              className="field"
+              placeholder="Math, Physics, English..."
+              value={subjectName}
+              onChange={(e) => setSubjectName(e.target.value)}
+            />
+
+            <div className="flex gap-3">
+              <button
+                className="btn-primary flex-1"
+                onClick={async () => {
+                  if (!subjectName.trim()) return;
+
+                  await onCreateSubject(
+                    subjectName,
+                    PALETTE[subjects.length % PALETTE.length]
+                  );
+
+                  setStep(2);
+                }}
               >
-                {subject.name}
-              </span>
-            ))}
+                <Plus size={18} />
+                Create subject
+              </button>
+
+              <button
+                className="btn-outline"
+                onClick={skipOnboarding}
+              >
+                Skip
+              </button>
+            </div>
           </div>
         </div>
-        <form
-          className="space-y-3"
-          onSubmit={async (event) => {
-            event.preventDefault();
-            if (subjectName.trim()) {
-              await onCreateSubject(subjectName.trim(), PALETTE[subjects.length % PALETTE.length]);
-              setSubjectName("");
-            } else {
-              await onComplete();
-            }
-          }}
-        >
-          <input
-            className="field"
-            value={subjectName}
-            onChange={(e) => setSubjectName(e.target.value)}
-            placeholder="Add a subject"
-          />
-          <input
-            className="field"
-            value={goal}
-            onChange={(e) => setGoal(e.target.value)}
-            placeholder="Semester goal"
-          />
-          <div className="flex gap-2">
-            <button className="btn-primary flex-1" type="submit">
-              <Plus size={18} /> Add
-            </button>
-            <button className="btn-outline flex-1" type="button" onClick={onComplete}>
-              Done
-            </button>
+      )}
+
+      {step === 2 && (
+        <div className="max-w-xl">
+          <p className="eyebrow">Step 2</p>
+
+          <h2 className="mt-2 text-3xl font-semibold">
+            Add a task for {subjects[subjects.length - 1]?.name}
+          </h2>
+
+          <p className="mt-3 text-sm text-dim">
+            Example: Homework, Project, Presentation...
+          </p>
+
+          <div className="mt-6 space-y-3">
+            <input
+              className="field"
+              placeholder="Homework"
+              value={taskName}
+              onChange={(e) => setTaskName(e.target.value)}
+            />
+
+            <div className="flex gap-3">
+              <button
+                className="btn-primary flex-1"
+                onClick={async () => {
+                  if (taskName.trim()) {
+                    await onCreateTask(taskName);
+                  }
+
+                  await onComplete();
+                }}
+              >
+                <ArrowRight size={18} />
+                Finish
+              </button>
+
+              <button
+                className="btn-outline"
+                onClick={skipOnboarding}
+              >
+                Skip
+              </button>
+            </div>
           </div>
-        </form>
-      </div>
+        </div>
+      )}
     </section>
   );
 }

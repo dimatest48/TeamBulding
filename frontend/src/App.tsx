@@ -11,9 +11,20 @@ import { SharedWithMePage } from "./pages/SharedWithMePage";
 import { SharePage } from "./pages/SharePage";
 import { ProfilePage } from "./pages/ProfilePage";
 
+import { Loader2 } from "lucide-react";
+
 function RequireAuth({ children }: { children: ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
-  if (!isLoaded) return <div className="grid min-h-screen place-items-center bg-canvas text-dim">Loading...</div>;
+  if (!isLoaded) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-canvas">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+          <span className="text-sm font-semibold tracking-wider text-dim">Loading...</span>
+        </div>
+      </div>
+    );
+  }
   if (!isSignedIn) return <Navigate to="/" replace />;
   return <>{children}</>;
 }

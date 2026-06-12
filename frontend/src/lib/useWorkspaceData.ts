@@ -14,9 +14,11 @@ export function useWorkspaceData() {
   const [taskInvites, setTaskInvites] = useState<TaskInvite[]>([]);
   const [me, setMe] = useState<UserRead | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     try {
+      setError("");
       const [sRes, tRes, iRes, tiRes, meRes] = await Promise.all([
         apiFetch("/subjects"),
         apiFetch("/tasks"),
@@ -29,6 +31,10 @@ export function useWorkspaceData() {
       if (iRes.ok) setInvites(await iRes.json());
       if (tiRes.ok) setTaskInvites(await tiRes.json());
       if (meRes.ok) setMe(await meRes.json());
+    } catch {
+      setError(
+        "Unable to connect to the server. Please check your internet connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -44,5 +50,15 @@ export function useWorkspaceData() {
     }).finally(load);
   }, [apiFetch, load, user?.firstName, user?.fullName, user?.primaryEmailAddress?.emailAddress]);
 
-  return { apiFetch, subjects, tasks, invites, taskInvites, me, loading, load };
+  return {
+    apiFetch,
+    subjects,
+    tasks,
+    invites,
+    taskInvites,
+    me,
+    loading,
+    error,
+    load,
+  };
 }

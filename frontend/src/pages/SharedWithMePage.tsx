@@ -10,6 +10,7 @@ import { useWorkspaceData } from "../lib/useWorkspaceData";
 import { dateOnly } from "../lib/tasks";
 import { EASE_OUT_EXPO, emptyStateContent } from "../lib/motion";
 import type { Task } from "../lib/types";
+import { SkeletonList } from "../components/SkeletonList";
 
 function RoleChip({ task }: { task: Task }) {
   const editor = task.role === "editor";
@@ -35,7 +36,7 @@ export function SharedWithMePage() {
       />
 
       {loading ? (
-        <div className="grid min-h-[40vh] place-items-center text-sm text-dim">Loading…</div>
+        <SkeletonList plain />
       ) : shared.length === 0 ? (
         <div className="relative grid min-h-[55vh] place-items-center overflow-hidden rounded-card border border-line bg-canvas px-6 py-16 text-center">
           <div

@@ -9,6 +9,7 @@ import { SubjectsPanel } from "../components/SubjectsPanel";
 import { QuickAddModal } from "../components/QuickAddModal";
 import { useWorkspaceData } from "../lib/useWorkspaceData";
 import { DEFAULT_SUBJECT_COLOR, PALETTE } from "../lib/tasks";
+import { SkeletonSubjects } from "../components/SkeletonSubjects";
 
 const ORB_ID = "hero-orb-subjects";
 
@@ -64,7 +65,7 @@ export function SubjectsPage() {
             }}
           />
         ) : loading ? (
-          <div className="grid min-h-[40vh] place-items-center text-sm text-dim">Loading…</div>
+          <SkeletonSubjects />
         ) : (
           <EmptyState
             orbId={ORB_ID}

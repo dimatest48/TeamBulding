@@ -8,6 +8,7 @@ import { TaskList } from "../components/TaskList";
 import { useWorkspaceData } from "../lib/useWorkspaceData";
 import { isDueThisWeek, isOverdue } from "../lib/tasks";
 import type { Invite, Member } from "../lib/types";
+import { SkeletonList } from "../components/SkeletonList";
 
 export function SubjectPage() {
   const { subjectId } = useParams();
@@ -19,6 +20,13 @@ export function SubjectPage() {
   const [inviteLink, setInviteLink] = useState("");
   const subject = subjects.find((item) => item.id === id);
   const scopedTasks = tasks.filter((task) => task.subject_id === id);
+  if (loading) {
+    return (
+      <AppShell>
+        <SkeletonList />
+      </AppShell>
+    );
+  }
 
   useEffect(() => {
     if (!id) return;

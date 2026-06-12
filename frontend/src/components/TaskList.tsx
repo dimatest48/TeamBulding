@@ -292,7 +292,7 @@ export function TaskList({
                   >
                     <ChevronDown className={`transition ${expanded ? "rotate-180" : ""}`} size={17} />
                   </button>
-                  <button type="button" onClick={() => startEditing(task)} className="icon-btn" aria-label="Edit task">
+                  <button type="button" onClick={() => startEditing(task)} className="icon-btn hidden sm:grid" aria-label="Edit task">
                     <Pencil size={17} />
                   </button>
                   <button
@@ -303,7 +303,7 @@ export function TaskList({
                         if (response.ok) await reload();
                       }
                     }}
-                    className="icon-btn hover:bg-rose/10 hover:text-rose"
+                    className="icon-btn hover:bg-rose/10 hover:text-rose hidden sm:grid"
                     aria-label="Delete task"
                   >
                     <Trash2 size={17} />
@@ -312,6 +312,29 @@ export function TaskList({
 
                 {expanded && (
                   <div className="mt-4 border-t border-line pt-4">
+                    {/* Mobile task actions */}
+                    <div className="flex sm:hidden gap-2 mb-4">
+                      <button
+                        type="button"
+                        onClick={() => startEditing(task)}
+                        className="btn-outline px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5"
+                      >
+                        <Pencil size={14} /> Edit task
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (window.confirm("Delete this task?")) {
+                            const response = await apiFetch(`/tasks/${task.id}`, { method: "DELETE" });
+                            if (response.ok) await reload();
+                          }
+                        }}
+                        className="btn-outline px-3.5 py-2 text-xs font-semibold text-rose hover:bg-rose/10 flex items-center gap-1.5"
+                      >
+                        <Trash2 size={14} /> Delete task
+                      </button>
+                    </div>
+
                     {editingTask === task.id ? (
                       <div className="mb-4 grid gap-3 lg:grid-cols-[1fr_160px_140px_150px]">
                         <input className="field m-0" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Task title" />
