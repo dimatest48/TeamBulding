@@ -116,7 +116,7 @@ export function SubjectsPanel({
                           setEditingSubject(subject.id);
                           setEditingName(subject.name);
                         }}
-                        className="icon-btn"
+                        className="icon-btn hidden sm:grid"
                         aria-label="Rename subject"
                       >
                         <Pencil size={16} />
@@ -124,7 +124,7 @@ export function SubjectsPanel({
                       <button
                         type="button"
                         onClick={() => onDeleteSubject(subject.id)}
-                        className="icon-btn hover:bg-rose/10 hover:text-rose"
+                        className="icon-btn hover:bg-rose/10 hover:text-rose hidden sm:grid"
                         aria-label="Delete subject"
                       >
                         <Trash2 size={16} />
@@ -142,6 +142,28 @@ export function SubjectsPanel({
 
                 {isOpen && (
                   <div className="mt-3 space-y-2 border-t border-line pt-3">
+                    {/* Mobile subject actions */}
+                    {subject.role === "owner" && (
+                      <div className="flex sm:hidden gap-2 mb-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingSubject(subject.id);
+                            setEditingName(subject.name);
+                          }}
+                          className="btn-outline px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5"
+                        >
+                          <Pencil size={14} /> Rename subject
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteSubject(subject.id)}
+                          className="btn-outline px-3.5 py-2 text-xs font-semibold text-rose hover:bg-rose/10 flex items-center gap-1.5"
+                        >
+                          <Trash2 size={14} /> Delete subject
+                        </button>
+                      </div>
+                    )}
                     {subjectTasks.length === 0 && <p className="text-sm text-dim">No tasks in this subject yet.</p>}
                     {subjectTasks.map((task) => (
                       <div key={task.id} className="flex items-center gap-2 rounded-lg border border-line bg-white/[0.02] px-3 py-2 text-sm">

@@ -8,6 +8,7 @@ import { EmptyState } from "../components/EmptyState";
 import { TaskList } from "../components/TaskList";
 import { QuickAddModal } from "../components/QuickAddModal";
 import { useWorkspaceData } from "../lib/useWorkspaceData";
+import { SkeletonList } from "../components/SkeletonList";
 
 const ORB_ID = "hero-orb-tasks";
 
@@ -51,7 +52,7 @@ export function TasksPage() {
         {hasTasks ? (
           <TaskList tasks={myTasks} subjects={subjects} apiFetch={apiFetch} reload={load} autoFocusNew={wantNew} />
         ) : loading ? (
-          <div className="grid min-h-[40vh] place-items-center text-sm text-dim">Loading…</div>
+          <SkeletonList />
         ) : (
           <EmptyState
             orbId={ORB_ID}

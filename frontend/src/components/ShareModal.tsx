@@ -212,9 +212,9 @@ export function ShareModal({
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-fg">
                 <Link2 size={16} className="text-accent" /> Shareable link
               </h3>
-              <div className="flex gap-2.5">
+              <div className="flex flex-col gap-2.5 sm:flex-row">
                 <RoleSelect value={linkRole} onChange={setLinkRole} disabled={creatingLink} className="flex-1" />
-                <button className="btn-outline shrink-0 px-5 py-3" type="button" onClick={createLink} disabled={creatingLink}>
+                <button className="btn-outline shrink-0 px-5 py-3 w-full sm:w-auto" type="button" onClick={createLink} disabled={creatingLink}>
                   {creatingLink ? <Loader2 size={16} className="animate-spin" /> : <><Link2 size={16} /> Create link</>}
                 </button>
               </div>

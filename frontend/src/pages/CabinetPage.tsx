@@ -12,10 +12,21 @@ import { DueThisWeekPanel } from "../components/dashboard/DueThisWeekPanel";
 import { SubjectsProgressPanel } from "../components/dashboard/SubjectsProgressPanel";
 import { useWorkspaceData } from "../lib/useWorkspaceData";
 import { isOverdue, sortTasks } from "../lib/tasks";
+import { SkeletonDashboard } from "../components/SkeletonDashboard";
 
 export function CabinetPage() {
   const { user } = useUser();
-  const { apiFetch, subjects, tasks, invites, taskInvites, me, loading, load } = useWorkspaceData();
+  const {
+    apiFetch,
+    subjects,
+    tasks,
+    invites,
+    taskInvites,
+    me,
+    loading,
+    error,
+    load,
+  } = useWorkspaceData();
   const [searchParams, setSearchParams] = useSearchParams();
   const firstName = user?.firstName || user?.fullName?.split(" ")[0] || "there";
 
@@ -36,37 +47,61 @@ export function CabinetPage() {
     const response = await apiFetch("/subjects", { method: "POST", body: JSON.stringify({ name, color }) });
     if (response.ok) await load();
   };
+  const createTask = async (title: string) => {
+    const latestSubject = subjects[subjects.length - 1];
+
+    const response = await apiFetch("/tasks", {
+      method: "POST",
+      body: JSON.stringify({
+        title,
+        priority: "medium",
+        subject_id: latestSubject?.id,
+      }),
+    });
+
+    if (response.ok) await load();
+  };
 
   return (
     <AppShell>
       <PageHeader eyebrow="Your private cabinet" title={`Hi, ${firstName}`} actions={<UserButton afterSignOutUrl="/" />} />
 
-      <OnboardingPanel
-        me={me}
-        subjects={subjects}
-        onCreateSubject={createSubject}
-        onComplete={async () => {
-          const response = await apiFetch("/users/me/complete-onboarding", { method: "POST" });
-          if (response.ok) await load();
-        }}
-      />
-      <InvitationsPanel invites={invites} taskInvites={taskInvites} apiFetch={apiFetch} reload={load} />
+      {loading ? (
+        <SkeletonDashboard />
+      ) : (
+        <>
+          <OnboardingPanel
+            me={me}
+            subjects={subjects}
+            onCreateSubject={createSubject}
+            onCreateTask={createTask}
+            onComplete={async () => {
+              const response = await apiFetch("/users/me/complete-onboarding", { method: "POST" });
+              if (response.ok) await load();
+            }}
+          />
+          <InvitationsPanel invites={invites} taskInvites={taskInvites} apiFetch={apiFetch} reload={load} />
+          {error && (
+            <div className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+              {error}
+            </div>
+          )}
 
-      <OverduePanel tasks={overdue} subjects={subjects} apiFetch={apiFetch} reload={load} />
+          <OverduePanel tasks={overdue} subjects={subjects} apiFetch={apiFetch} reload={load} />
 
-      <div className="grid items-stretch gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ActiveTasksPanel tasks={tasks} subjects={subjects} apiFetch={apiFetch} reload={load} />
-        </div>
-        <FocusPanel subjects={subjects} tasks={tasks} />
-      </div>
+          <div className="grid items-stretch gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <ActiveTasksPanel tasks={tasks} subjects={subjects} apiFetch={apiFetch} reload={load} />
+            </div>
+            <FocusPanel subjects={subjects} tasks={tasks} />
+          </div>
 
-      <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-2">
-        <DueThisWeekPanel tasks={tasks} subjects={subjects} apiFetch={apiFetch} reload={load} />
-        <SubjectsProgressPanel subjects={subjects} tasks={tasks} />
-      </div>
-
-      {loading && <p className="mt-4 text-sm text-dim">Loading...</p>}
+          <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-2">
+            <DueThisWeekPanel tasks={tasks} subjects={subjects} apiFetch={apiFetch} reload={load} />
+            <SubjectsProgressPanel subjects={subjects} tasks={tasks} />
+          </div>
+        </>
+      )}
     </AppShell>
   );
 }
